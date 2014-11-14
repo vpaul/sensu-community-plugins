@@ -30,25 +30,30 @@ class CheckClusterHealth < Sensu::Plugin::Check::CLI
     :short => '-o OFFLINE_NODES',
     :long => '--warn-offline OFFLINE_NODES',
     :description => 'Number of offline nodes to trigger warning',
-    :default => 1
+    :default => 1,
+    :proc => proc {|a| a.to_i },
 
   option :critical_offline,
     :short => '-O OFFLINE_NODES',
     :long => '--critical-offline OFFLINE_NODES',
     :description => 'Number of offline nodes to trigger critical',
-    :default => 1
+    :default => 1,
+    :proc => proc {|a| a.to_i },
 
   option :warn_failed,
     :short => '-f FAILED_RESOURCES',
     :long => '--warn-failed FAILED_RESOURCES',
     :description => 'Number of failed resources to trigger warning',
-    :default => 1
+    :default => 1,
+    :proc => proc {|a| a.to_i },
+
 
   option :critical_failed,
     :short => '-F FAILED_RESOURCES',
     :long => '--critical-failed FAILED_RESOURCES',
     :description => 'Number of failed resources to trigger critical',
-    :default => 1
+    :default => 1,
+    :proc => proc {|a| a.to_i },
 
   def run
     cluster_state = REXML::Document.new(cluster_xml)
@@ -60,7 +65,7 @@ class CheckClusterHealth < Sensu::Plugin::Check::CLI
     failed_resources = []
 
     cluster_state.elements.each('crm_mon/nodes/node') do |node|
-      if node.attributes['expected_up'] == 'true' && node.attributes['online'] == 'false'
+      if node.attributes['expected_up'] == 'false' && node.attributes['online'] == 'false'
         offline_nodes << node.attributes['name']
       end
 
@@ -81,7 +86,7 @@ class CheckClusterHealth < Sensu::Plugin::Check::CLI
   end
 
   def cluster_xml
-    `crm_mon -Xn`
+    `crm_mon -1 -Xn`
   end
 
 end
